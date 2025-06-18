@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Sidebar from './components/Sidebar'
+import Dashboard from './components/Dashboard'
 import Timeline from './components/Timeline'
 import EntryEditor from './components/EntryEditor'
 import AudioRecorder from './components/AudioRecorder'
@@ -19,7 +20,7 @@ function App() {
     speechLanguage: 'en-US',
     audioQuality: 'high'
   })
-  const [currentView, setCurrentView] = useState('timeline')
+  const [currentView, setCurrentView] = useState('dashboard')
   const [selectedEntry, setSelectedEntry] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isUnifiedModalOpen, setIsUnifiedModalOpen] = useState(false)
@@ -122,6 +123,14 @@ function App() {
 
   const renderCurrentView = () => {
     switch (currentView) {
+      case 'dashboard':
+        return (
+          <Dashboard
+            entries={entries}
+            onNewEntry={createNewEntry}
+            onEditEntry={editEntry}
+          />
+        )
       case 'timeline':
         return (
           <Timeline

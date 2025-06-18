@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Plus, Calendar, Search, Settings, BookOpen, Moon, Sun, Volume2 } from 'lucide-react'
+import { Plus, Calendar, Search, Settings, BookOpen, Moon, Sun, Volume2, BarChart3 } from 'lucide-react'
 import { useTheme } from '../hooks/useTheme'
 import './Sidebar.css'
 
@@ -14,6 +14,11 @@ const Sidebar = ({
   const { theme, toggleTheme } = useTheme()
 
   const menuItems = [
+    {
+      id: 'dashboard',
+      icon: BarChart3,
+      label: 'Dashboard'
+    },
     {
       id: 'timeline',
       icon: Calendar,
