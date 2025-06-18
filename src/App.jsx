@@ -176,6 +176,7 @@ function App() {
             entries={entries}
             onNewEntry={createNewEntry}
             onEditEntry={editEntry}
+            onViewChange={handleViewChange}
           />
         )
       case 'timeline':
@@ -218,7 +219,9 @@ function App() {
       <button
         className="mobile-menu-toggle glass-strong"
         onClick={toggleMobileMenu}
-        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+        aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        aria-expanded={isMobileMenuOpen}
+        aria-controls="sidebar-navigation"
       >
         {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -226,7 +229,7 @@ function App() {
       {/* Mobile menu overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="mobile-overlay active"
+          className="mobile-overlay"
           onClick={closeMobileMenu}
           aria-hidden="true"
         />
@@ -242,7 +245,11 @@ function App() {
         onCloseMobile={closeMobileMenu}
       />
       
-      <main className="main-content">
+      <main 
+        className="main-content"
+        role="main"
+        aria-label="Main content area"
+      >
         {renderCurrentView()}
       </main>
 

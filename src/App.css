@@ -3,69 +3,34 @@
   min-height: 100vh;
   background: var(--bg-primary);
   position: relative;
+  overflow-x: hidden;
 }
 
 .main-content {
   flex: 1;
   padding: var(--spacing-xl);
   margin-left: 280px;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 100vh;
   position: relative;
+  width: calc(100% - 280px);
+  box-sizing: border-box;
 }
 
-/* Background decoration */
-.app::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Floating elements for visual interest */
-.app::after {
-  content: '';
-  position: fixed;
-  top: 10%;
-  right: 10%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(167, 139, 250, 0.1) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: float 6s ease-in-out infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-  }
-}
-
-/* Mobile menu toggle - ensure it's accessible */
+/* Mobile menu toggle */
 .mobile-menu-toggle {
   display: none;
   position: fixed;
   top: var(--spacing-lg);
   left: var(--spacing-lg);
-  z-index: 1001;
+  z-index: 1002;
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--spacing-sm);
   background: var(--bg-modal);
   backdrop-filter: var(--glass-blur-strong);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -73,16 +38,36 @@
 }
 
 .mobile-menu-toggle:hover {
-  background: var(--bg-card);
+  background: var(--accent-color);
+  color: white;
   transform: scale(1.05);
+}
+
+.mobile-menu-toggle:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Mobile overlay */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  opacity: 1;
+  animation: fadeIn 0.3s ease-out;
 }
 
 /* Progressive responsive breakpoints */
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 0;
-    padding: var(--spacing-lg);
-    padding-top: calc(var(--spacing-lg) + 60px); /* Account for mobile menu button */
+    width: 100%;
+    padding: calc(var(--spacing-lg) + 60px) var(--spacing-lg) var(--spacing-lg);
   }
   
   .mobile-menu-toggle {
@@ -94,47 +79,34 @@
 
 @media (max-width: 768px) {
   .main-content {
-    padding: var(--spacing-md);
-    padding-top: calc(var(--spacing-md) + 50px);
+    padding: calc(var(--spacing-md) + 50px) var(--spacing-md) var(--spacing-md);
   }
   
   .mobile-menu-toggle {
     top: var(--spacing-md);
     left: var(--spacing-md);
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-  
-  /* Adjust floating decorations for mobile */
-  .app::after {
-    width: 100px;
-    height: 100px;
-    top: 20%;
-    right: 5%;
+    min-width: 40px;
+    min-height: 40px;
+    padding: var(--spacing-xs);
   }
 }
 
 @media (max-width: 480px) {
   .main-content {
-    padding: var(--spacing-sm);
-    padding-top: calc(var(--spacing-sm) + 45px);
+    padding: calc(var(--spacing-sm) + 45px) var(--spacing-sm) var(--spacing-sm);
   }
   
   .mobile-menu-toggle {
     top: var(--spacing-sm);
     left: var(--spacing-sm);
-    padding: var(--spacing-xs);
-  }
-  
-  /* Hide floating decorations on very small screens */
-  .app::after {
-    display: none;
+    min-width: 36px;
+    min-height: 36px;
   }
 }
 
 @media (max-width: 320px) {
   .main-content {
-    padding: var(--spacing-xs);
-    padding-top: calc(var(--spacing-xs) + 40px);
+    padding: calc(var(--spacing-xs) + 40px) var(--spacing-xs) var(--spacing-xs);
   }
   
   .mobile-menu-toggle {
@@ -143,78 +115,33 @@
   }
 }
 
-/* Ensure proper content flow and prevent overflow */
+/* Prevent content overflow */
 .main-content > * {
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* Content area adjustments for mobile */
-@media (max-width: 768px) {
-  .main-content {
-    position: relative;
-    overflow-x: hidden;
-  }
+/* Menu open state */
+.app.menu-open .main-content {
+  pointer-events: none;
 }
 
-/* Prevent horizontal scroll on mobile */
-@media (max-width: 768px) {
-  .app {
-    overflow-x: hidden;
-  }
-  
-  .main-content {
-    width: 100%;
-    max-width: 100vw;
-  }
+.app.menu-open .mobile-menu-toggle {
+  pointer-events: auto;
 }
 
 /* Accessibility improvements */
-.mobile-menu-toggle:focus {
-  outline: 2px solid var(--accent-color);
-  outline-offset: 2px;
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu-toggle,
+  .main-content {
+    transition: none;
+  }
 }
 
-/* High contrast mode adjustments */
+/* High contrast mode */
 @media (prefers-contrast: high) {
   .mobile-menu-toggle {
     border: 2px solid var(--accent-color);
     background: var(--bg-primary);
   }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .app::after {
-    animation: none;
-  }
-  
-  .mobile-menu-toggle {
-    transition: none;
-  }
-  
-  .main-content {
-    transition: none;
-  }
-}
-
-/* Ensure mobile menu doesn't interfere with content */
-@media (max-width: 1024px) {
-  .app.menu-open .main-content {
-    pointer-events: none;
-  }
-  
-  .app.menu-open .mobile-menu-toggle {
-    pointer-events: auto;
-  }
-}
-
-/* Fix any potential z-index issues */
-.main-content {
-  position: relative;
-  z-index: 1;
-}
-
-.mobile-menu-toggle {
-  z-index: 1001;
 }

@@ -1,11 +1,13 @@
 .dashboard {
   max-width: 1400px;
   margin: 0 auto;
-  padding: var(--spacing-lg);
+  padding: 0;
+  width: 100%;
 }
 
 .dashboard-header {
   margin-bottom: var(--spacing-2xl);
+  padding: 0 var(--spacing-md);
 }
 
 .greeting-section {
@@ -24,33 +26,63 @@
   font-weight: 700;
   margin: 0;
   color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .greeting-section p {
   color: var(--text-muted);
-  margin: 0;
+  margin: var(--spacing-xs) 0 0 0;
   font-size: var(--font-size-lg);
 }
 
+/* Progressive Layout System */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(12, 1fr);
   gap: var(--spacing-xl);
   align-items: start;
+  padding: 0 var(--spacing-md);
 }
 
+/* Visual Hierarchy Classes */
+.priority-one {
+  /* Primary actions - most prominent */
+  grid-column: span 6;
+  order: 1;
+  transform: scale(1.02);
+  z-index: 3;
+}
+
+.priority-two {
+  /* Secondary content - activity chart dominant */
+  grid-column: span 12;
+  order: 2;
+  z-index: 2;
+}
+
+.priority-three {
+  /* Tertiary content - discoverable */
+  grid-column: span 6;
+  order: 3;
+  opacity: 0.95;
+  z-index: 1;
+}
+
+/* Dashboard Card Base */
 .dashboard-card {
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: slideInUp 0.4s ease-out;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dashboard-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px) scale(1.01);
   box-shadow: 0 20px 60px var(--shadow-color);
 }
 
@@ -81,29 +113,49 @@
   gap: var(--spacing-lg);
 }
 
-/* Quick Actions */
+/* Quick Actions - Enhanced for Primary CTA */
 .quick-actions .card-content {
   gap: var(--spacing-md);
 }
 
 .action-btn {
   width: 100%;
+  min-height: 44px;
   padding: var(--spacing-lg);
   font-size: var(--font-size-lg);
   font-weight: 600;
-  justify-content: flex-start;
-  transition: all 0.2s ease;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-lg);
+  gap: var(--spacing-md);
+}
+
+.cta-primary {
+  padding: var(--spacing-xl);
+  font-size: var(--font-size-xl);
+  min-height: 56px;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+}
+
+.cta-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
 }
 
 .action-btn:hover {
-  transform: translateX(4px);
+  transform: translateY(-2px);
+}
+
+.action-btn:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 /* Statistics */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-md);
 }
 
 .stat-item {
@@ -113,6 +165,10 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .stat-item:hover {
@@ -126,6 +182,7 @@
   color: var(--accent-color);
   margin-bottom: var(--spacing-xs);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .stat-label {
@@ -146,9 +203,8 @@
   border: 1px solid var(--border-color);
 }
 
-/* Activity Chart - Dominant element */
+/* Activity Chart - Dominant Element */
 .activity-chart {
-  grid-column: span 2;
   min-height: 300px;
 }
 
@@ -185,23 +241,36 @@
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   transition: all 0.2s ease;
   cursor: pointer;
-  opacity: 0.8;
+  border: none;
+  background: transparent;
+  padding: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: flex-end;
 }
 
-.chart-bar:hover {
-  opacity: 1;
-  transform: scaleY(1.05);
+.chart-bar:hover:not(:disabled) {
+  transform: scaleY(1.1);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.chart-bar:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.chart-bar:disabled {
+  cursor: default;
 }
 
 .chart-label {
   position: absolute;
-  bottom: -20px;
+  bottom: -25px;
   font-size: var(--font-size-sm);
   color: var(--text-muted);
-  transform: rotate(-45deg);
-  transform-origin: center;
-  white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .chart-summary {
@@ -211,20 +280,30 @@
   margin-top: var(--spacing-sm);
 }
 
-/* On This Day / Memory Card */
+/* Memory Card */
 .memory-card {
+  width: 100%;
   cursor: pointer;
   padding: var(--spacing-lg);
   background: var(--bg-card);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  min-height: 44px;
 }
 
 .memory-card:hover {
   background: var(--bg-modal);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.memory-card:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 .memory-header {
@@ -274,17 +353,27 @@
 }
 
 .recent-item {
+  width: 100%;
   cursor: pointer;
   padding: var(--spacing-md);
   background: var(--bg-card);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+  min-height: 44px;
 }
 
 .recent-item:hover {
   background: var(--bg-modal);
   transform: translateX(4px);
+}
+
+.recent-item:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
 .recent-header {
@@ -313,20 +402,57 @@
   line-height: 1.5;
 }
 
-/* Responsive design - Mobile breakpoints */
+/* Responsive Design - Progressive Enhancement */
 @media (max-width: 1200px) {
   .dashboard-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(8, 1fr);
   }
   
-  .activity-chart {
-    grid-column: span 1;
+  .priority-one {
+    grid-column: span 4;
+  }
+  
+  .priority-two {
+    grid-column: span 8;
+  }
+  
+  .priority-three {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard {
+    padding: 0;
+  }
+  
+  .dashboard-header {
+    padding: 0 var(--spacing-md);
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 0 var(--spacing-md);
+  }
+  
+  .priority-one {
+    grid-column: span 6;
+    transform: scale(1);
+  }
+  
+  .priority-two {
+    grid-column: span 6;
+  }
+  
+  .priority-three {
+    grid-column: span 6;
   }
 }
 
 @media (max-width: 768px) {
-  .dashboard {
-    padding: var(--spacing-md);
+  .dashboard-header {
+    padding: 0 var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
   }
   
   .greeting-section {
@@ -344,61 +470,42 @@
     font-size: var(--font-size-base);
   }
   
-  /* Mobile grid layout with proper hierarchy */
   .dashboard-grid {
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
-    grid-template-areas:
-      "activity"
-      "actions"
-      "stats"
-      "memory"
-      "recent";
+    padding: 0 var(--spacing-sm);
   }
   
-  /* Ensure activity chart is dominant */
+  .priority-one,
+  .priority-two,
+  .priority-three {
+    grid-column: span 1;
+  }
+  
+  .priority-two {
+    order: 1; /* Activity chart first on mobile */
+  }
+  
+  .priority-one {
+    order: 2; /* Quick actions second */
+  }
+  
+  .priority-three {
+    order: 3; /* Everything else follows */
+  }
+  
+  .dashboard-card {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+  }
+  
   .activity-chart {
-    grid-area: activity;
-    order: 1;
     min-height: 280px;
-  }
-  
-  /* Floating action cards - smaller proportionally */
-  .quick-actions {
-    grid-area: actions;
-    order: 2;
-    transform: scale(0.95);
-    margin: var(--spacing-sm) auto;
-    max-width: 90%;
-  }
-  
-  .statistics {
-    grid-area: stats;
-    order: 3;
-    transform: scale(0.95);
-    margin: var(--spacing-sm) auto;
-    max-width: 90%;
-  }
-  
-  .on-this-day {
-    grid-area: memory;
-    order: 4;
-    transform: scale(0.95);
-    margin: var(--spacing-sm) auto;
-    max-width: 90%;
-  }
-  
-  .recent-entries {
-    grid-area: recent;
-    order: 5;
-    transform: scale(0.95);
-    margin: var(--spacing-sm) auto;
-    max-width: 90%;
   }
   
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
   }
   
   .chart-bars {
@@ -407,35 +514,28 @@
   
   .chart-label {
     font-size: 10px;
+    bottom: -20px;
   }
   
-  .dashboard-card {
-    padding: var(--spacing-md);
-    border-radius: var(--radius-lg);
-  }
-  
-  /* Center alignment for mobile cards */
-  .quick-actions,
-  .statistics,
-  .on-this-day,
-  .recent-entries {
-    justify-self: center;
-    align-self: center;
+  .cta-primary {
+    padding: var(--spacing-lg);
+    font-size: var(--font-size-lg);
+    min-height: 48px;
   }
 }
 
 @media (max-width: 480px) {
-  .dashboard {
-    padding: var(--spacing-sm);
+  .dashboard-header {
+    padding: 0 var(--spacing-xs);
   }
   
-  /* Even smaller floating cards for very small screens */
-  .quick-actions,
-  .statistics,
-  .on-this-day,
-  .recent-entries {
-    transform: scale(0.9);
-    max-width: 95%;
+  .dashboard-grid {
+    padding: 0 var(--spacing-xs);
+    gap: var(--spacing-md);
+  }
+  
+  .dashboard-card {
+    padding: var(--spacing-md);
   }
   
   .activity-chart {
@@ -444,12 +544,18 @@
   
   .stat-grid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
   }
   
   .action-btn {
     font-size: var(--font-size-base);
     padding: var(--spacing-md);
+  }
+  
+  .cta-primary {
+    padding: var(--spacing-md);
+    font-size: var(--font-size-base);
+    min-height: 44px;
   }
   
   .chart-bar {
@@ -461,43 +567,34 @@
     gap: 1px;
   }
   
-  .dashboard-card {
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-  
   .card-header h2 {
     font-size: var(--font-size-lg);
   }
 }
 
 @media (max-width: 320px) {
-  .dashboard {
-    padding: var(--spacing-xs);
-  }
-  
-  /* Maximum compression for very small screens */
-  .quick-actions,
-  .statistics,
-  .on-this-day,
-  .recent-entries {
-    transform: scale(0.85);
-    max-width: 98%;
-  }
-  
-  .activity-chart {
-    min-height: 200px;
+  .dashboard-header {
+    margin-bottom: var(--spacing-lg);
   }
   
   .greeting-section h1 {
     font-size: var(--font-size-xl);
   }
   
+  .activity-chart {
+    min-height: 200px;
+  }
+  
   .chart-bars {
     height: 100px;
   }
+  
+  .dashboard-card {
+    padding: var(--spacing-sm);
+  }
 }
 
-/* Animation */
+/* Animations with Staggered Entry */
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -509,37 +606,41 @@
   }
 }
 
-/* Staggered animation for dashboard cards */
-.dashboard-card:nth-child(1) { animation-delay: 0.1s; }
-.dashboard-card:nth-child(2) { animation-delay: 0.2s; }
-.dashboard-card:nth-child(3) { animation-delay: 0.3s; }
-.dashboard-card:nth-child(4) { animation-delay: 0.4s; }
-.dashboard-card:nth-child(5) { animation-delay: 0.5s; }
-.dashboard-card:nth-child(6) { animation-delay: 0.6s; }
+.priority-one { animation-delay: 0.1s; }
+.priority-two { animation-delay: 0.2s; }
+.priority-three:nth-of-type(3) { animation-delay: 0.3s; }
+.priority-three:nth-of-type(4) { animation-delay: 0.4s; }
+.priority-three:nth-of-type(5) { animation-delay: 0.5s; }
 
-/* Ensure proper spacing and prevent overflow */
-.dashboard-grid > * {
-  width: 100%;
-  box-sizing: border-box;
+/* Accessibility and Focus Management */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card,
+  .action-btn,
+  .chart-bar,
+  .memory-card,
+  .recent-item {
+    animation: none;
+    transition: none;
+  }
 }
 
-/* Floating effect for action cards on mobile */
-@media (max-width: 768px) {
-  .quick-actions,
-  .statistics,
-  .on-this-day,
-  .recent-entries {
-    box-shadow: 
-      0 12px 40px var(--shadow-color),
-      inset 0 2px 0 rgba(255, 255, 255, 0.15);
-    position: relative;
-    z-index: 1;
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .chart-bar {
+    border: 1px solid var(--text-primary);
   }
   
-  .quick-actions:hover,
-  .statistics:hover,
-  .on-this-day:hover,
-  .recent-entries:hover {
-    transform: scale(0.95) translateY(-2px);
+  .stat-item,
+  .memory-card,
+  .recent-item {
+    border: 2px solid var(--border-color);
   }
+}
+
+/* Ensure proper spacing and no overflow */
+.dashboard-grid > * {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
