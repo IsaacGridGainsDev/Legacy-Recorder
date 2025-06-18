@@ -140,7 +140,7 @@ function App() {
   // Apply theme and font size
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    document.documentElement.style.setProperty('--user-font-size', `${settings.fontSize}px`)
+    document.documentElement.style.setProperty('--user-font-size', `${Math.max(settings.fontSize, 16)}px`)
   }, [theme, settings.fontSize])
 
   // Close mobile menu on escape key
@@ -166,6 +166,18 @@ function App() {
     return () => {
       document.body.style.overflow = 'unset'
     }
+  }, [isMobileMenuOpen])
+
+  // Close menu on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [isMobileMenuOpen])
 
   const renderCurrentView = () => {
@@ -217,11 +229,11 @@ function App() {
     <div className={`app ${isMobileMenuOpen ? 'menu-open' : ''}`}>
       {/* Mobile menu toggle button */}
       <button
-        className="mobile-menu-toggle glass-strong"
+        className="mobile-menu-toggle"
         onClick={toggleMobileMenu}
         aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
         aria-expanded={isMobileMenuOpen}
-        aria-controls="sidebar-navigation"
+        aria-controls="main-navigation"
       >
         {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
@@ -243,6 +255,8 @@ function App() {
         audioEntriesCount={entries.filter(e => e.type === 'audio').length}
         isMobileOpen={isMobileMenuOpen}
         onCloseMobile={closeMobileMenu}
+        onToggleTheme={toggleTheme}
+        theme={theme}
       />
       
       <main 
