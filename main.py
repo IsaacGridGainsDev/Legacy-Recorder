@@ -871,23 +871,30 @@ class LegacyRecorder:
 # Additional utility functions and requirements check
 def check_requirements():
     """Check if required packages are installed"""
-    required_packages = [
+    # Package names as they should be passed to 'pip install'
+    # and displayed in the error message.
+    required_packages_for_pip = [
         'customtkinter', 'sounddevice', 'scipy', 'numpy', 
-        'apscheduler', 'pystray', 'pillow'
+        'apscheduler', 'pystray', 'pillow' 
     ]
     
-    missing_packages = []
-    for package in required_packages:
+    missing_packages_for_pip = []
+    for pkg_for_pip in required_packages_for_pip:
+        import_name = pkg_for_pip
+        if pkg_for_pip == 'pillow':
+            import_name = 'PIL'  # Pillow is imported as PIL
+
         try:
-            __import__(package)
+            __import__(import_name)
         except ImportError:
-            missing_packages.append(package)
+            # If import fails, add the name used for pip install to the missing list
+            missing_packages_for_pip.append(pkg_for_pip) 
     
-    if missing_packages:
+    if missing_packages_for_pip:
         print("Missing required packages:")
-        for package in missing_packages:
+        for package in missing_packages_for_pip:
             print(f"  - {package}")
-        print("\nInstall with: pip install " + " ".join(missing_packages))
+        print("\nInstall with: pip install " + " ".join(missing_packages_for_pip))
         return False
     return True
 
