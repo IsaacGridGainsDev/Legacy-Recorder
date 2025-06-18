@@ -50,156 +50,231 @@ const Timeline = ({ entries, onEditEntry, onDeleteEntry, onPlayAudio, searchQuer
     onPlayAudio(entry)
   }
 
+  const handleCardKeyDown = (e, entry) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onEditEntry(entry)
+    }
+  }
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      onSearchChange('')
+    }
+  }
+
   return (
     <div className="timeline">
       <header className="timeline-header">
         <div className="timeline-title">
           <Calendar className="header-icon" aria-hidden="true" />
           <div>
-            <h1>Your Journal Timeline</h1>
+            <h1 id="timeline-heading">Your Journal Timeline</h1>
             <p>A chronological view of your thoughts and reflections</p>
           </div>
         </div>
         
-        <div className="search-container">
+        <div className="search-container" role="search">
           <label htmlFor="timeline-search" className="sr-only">
-            Search entries
+            Search journal entries
           </label>
           <Search className="search-icon" aria-hidden="true" />
           <input
             id="timeline-search"
-            type="text"
+            type="search"
             placeholder="Search entries..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             className="input search-input"
             aria-describedby="search-help"
+            autoComplete="off"
+            spellCheck="false"
           />
           <div id="search-help" className="sr-only">
-            Search through your journal entries by title, content, or tags
+            Search through your journal entries by title, content, or tags. Press Escape to clear search.
           </div>
         </div>
       </header>
 
-      <main className="timeline-content">
+      <main className="timeline-content" role="main">
         {entries.length === 0 ? (
-          <div className="empty-state glass card">
+          <div 
+            className="empty-state glass card"
+            role="status"
+            aria-live="polite"
+          >
             <Calendar size={48} className="empty-icon" aria-hidden="true" />
             <h2>No entries yet</h2>
             <p>Start your journaling journey by creating your first entry.</p>
           </div>
         ) : (
-          <div className="entries-grid" role="list" aria-label="Journal entries">
-            {entries.map((entry) => (
-              <article
-                key={entry.id}
-                className={`entry-card glass card fade-in ${entry.type === 'audio' ? 'audio-entry' : ''}`}
-                onClick={() => onEditEntry(entry)}
-                role="listitem"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onEditEntry(entry)
-                  }
-                }}
-                aria-label={`${entry.type === 'audio' ? 'Audio' : 'Text'} entry: ${entry.title || 'Untitled'} from ${formatDate(entry.createdAt)}`}
-              >
-                <header className="entry-header">
-                  <div className="entry-meta">
-                    <Clock size={16} aria-hidden="true" />
-                    <time dateTime={entry.createdAt}>
-                      {formatDate(entry.createdAt)}
-                    </time>
-                    {entry.type === 'audio' && (
-                      <>
-                        <Volume2 size={14} aria-hidden="true" />
-                        <span>{formatDuration(entry.duration)}</span>
-                      </>
-                    )}
-                  </div>
-                  
-                  <div className="entry-actions">
-                    {entry.type === 'audio' && (
-                      <button
-                        className="btn btn-primary btn-icon"
-                        onClick={(e) => handlePlayClick(e, entry)}
-                        aria-label="Play audio entry"
-                        title="Play audio"
+          <>
+            <div 
+              className="results-summary sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {searchQuery 
+                ? `Found ${entries.length} entries matching "${searchQuery}"`
+                : `Showing ${entries.length} journal entries`
+              }
+            </div>
+            
+            <div 
+              className="entries-grid" 
+              role="list" 
+              aria-label="Journal entries"
+              aria-describedby="timeline-heading"
+            >
+              {entries.map((entry, index) => (
+                <article
+                  key={entry.id}
+                  className={`entry-card glass card fade-in ${entry.type === 'audio' ? 'audio-entry' : ''}`}
+                  onClick={() => onEditEntry(entry)}
+                  role="listitem"
+                  tabIndex={0}
+                  onKeyDown={(e) => handleCardKeyDown(e, entry)}
+                  aria-label={`${entry.type === 'audio' ? 'Audio' : 'Text'} entry: ${entry.title || 'Untitled'} from ${formatDate(entry.createdAt)}. ${index + 1} of ${entries.length}.`}
+                  aria-describedby={`entry-meta-${entry.id}`}
+                >
+                  <header className="entry-header">
+                    <div 
+                      className="entry-meta"
+                      id={`entry-meta-${entry.id}`}
+                    >
+                      <Clock size={16} aria-hidden="true" />
+                      <time 
+                        dateTime={entry.createdAt}
+                        aria-label={`Created on ${format(parseISO(entry.createdAt), 'EEEE, MMMM do, yyyy \'at\' h:mm a')}`}
                       >
-                        <Play size={16} aria-hidden="true" />
-                      </button>
-                    )}
-                    <button
-                      className="btn btn-secondary btn-icon"
-                      onClick={(e) => handleEditClick(e, entry)}
-                      aria-label={entry.type === 'audio' ? 'View audio entry details' : 'Edit entry'}
-                      title={entry.type === 'audio' ? 'View audio entry' : 'Edit entry'}
-                    >
-                      <Edit size={16} aria-hidden="true" />
-                    </button>
-                    <button
-                      className="btn btn-danger btn-icon"
-                      onClick={(e) => handleDeleteClick(e, entry.id)}
-                      aria-label="Delete this entry permanently"
-                      title="Delete entry"
-                    >
-                      <Trash2 size={16} aria-hidden="true" />
-                    </button>
-                  </div>
-                </header>
-
-                <div className="entry-type-indicator" aria-hidden="true">
-                  {entry.type === 'audio' ? (
-                    <Volume2 size={20} className="type-icon audio" />
-                  ) : (
-                    <Edit size={20} className="type-icon text" />
-                  )}
-                </div>
-
-                {entry.title && (
-                  <h2 className="entry-title">{entry.title}</h2>
-                )}
-
-                {entry.type === 'audio' ? (
-                  <div className="entry-preview audio-preview">
-                    <div className="audio-waveform" aria-hidden="true">
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
-                      <div className="wave-bar"></div>
+                        {formatDate(entry.createdAt)}
+                      </time>
+                      {entry.type === 'audio' && (
+                        <>
+                          <Volume2 size={14} aria-hidden="true" />
+                          <span aria-label={`Duration: ${formatDuration(entry.duration)}`}>
+                            {formatDuration(entry.duration)}
+                          </span>
+                        </>
+                      )}
                     </div>
-                    <span className="audio-duration">
-                      {formatDuration(entry.duration)}
-                    </span>
-                  </div>
-                ) : (
-                  entry.content && (
-                    <div className="entry-preview">
-                      {truncateContent(entry.content)}
-                    </div>
-                  )
-                )}
-
-                {entry.tags && entry.tags.length > 0 && (
-                  <footer className="entry-tags">
-                    <Tag size={14} aria-hidden="true" />
-                    <div className="tags-list" role="list" aria-label="Entry tags">
-                      {entry.tags.map((tag, index) => (
-                        <span key={index} className="tag" role="listitem">
-                          {tag}
+                    
+                    <div 
+                      className="entry-actions"
+                      role="group"
+                      aria-label="Entry actions"
+                    >
+                      {entry.type === 'audio' && (
+                        <button
+                          className="btn btn-primary btn-icon"
+                          onClick={(e) => handlePlayClick(e, entry)}
+                          aria-label={`Play audio entry: ${entry.title || 'Untitled'}`}
+                          title="Play audio"
+                        >
+                          <Play size={16} aria-hidden="true" />
+                          <span className="sr-only">Play</span>
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-secondary btn-icon"
+                        onClick={(e) => handleEditClick(e, entry)}
+                        aria-label={entry.type === 'audio' 
+                          ? `View details for audio entry: ${entry.title || 'Untitled'}` 
+                          : `Edit text entry: ${entry.title || 'Untitled'}`
+                        }
+                        title={entry.type === 'audio' ? 'View audio entry details' : 'Edit entry'}
+                      >
+                        <Edit size={16} aria-hidden="true" />
+                        <span className="sr-only">
+                          {entry.type === 'audio' ? 'View Details' : 'Edit'}
                         </span>
-                      ))}
+                      </button>
+                      <button
+                        className="btn btn-danger btn-icon"
+                        onClick={(e) => handleDeleteClick(e, entry.id)}
+                        aria-label={`Delete entry: ${entry.title || 'Untitled'}. This action cannot be undone.`}
+                        title="Delete entry permanently"
+                      >
+                        <Trash2 size={16} aria-hidden="true" />
+                        <span className="sr-only">Delete</span>
+                      </button>
                     </div>
-                  </footer>
-                )}
-              </article>
-            ))}
-          </div>
+                  </header>
+
+                  <div 
+                    className="entry-type-indicator" 
+                    aria-hidden="true"
+                    role="presentation"
+                  >
+                    {entry.type === 'audio' ? (
+                      <Volume2 size={20} className="type-icon audio" />
+                    ) : (
+                      <Edit size={20} className="type-icon text" />
+                    )}
+                  </div>
+
+                  {entry.title && (
+                    <h2 className="entry-title" id={`entry-title-${entry.id}`}>
+                      {entry.title}
+                    </h2>
+                  )}
+
+                  {entry.type === 'audio' ? (
+                    <div className="entry-preview audio-preview">
+                      <div 
+                        className="audio-waveform" 
+                        aria-hidden="true"
+                        role="presentation"
+                      >
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className="wave-bar"></div>
+                        ))}
+                      </div>
+                      <span 
+                        className="audio-duration"
+                        aria-label={`Audio duration: ${formatDuration(entry.duration)}`}
+                      >
+                        {formatDuration(entry.duration)}
+                      </span>
+                    </div>
+                  ) : (
+                    entry.content && (
+                      <div 
+                        className="entry-preview"
+                        aria-describedby={`entry-title-${entry.id}`}
+                      >
+                        {truncateContent(entry.content)}
+                      </div>
+                    )
+                  )}
+
+                  {entry.tags && entry.tags.length > 0 && (
+                    <footer className="entry-tags">
+                      <Tag size={14} aria-hidden="true" />
+                      <div 
+                        className="tags-list" 
+                        role="list" 
+                        aria-label={`Tags: ${entry.tags.join(', ')}`}
+                      >
+                        {entry.tags.map((tag, tagIndex) => (
+                          <span 
+                            key={tagIndex} 
+                            className="tag" 
+                            role="listitem"
+                            aria-label={`Tag: ${tag}`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </footer>
+                  )}
+                </article>
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>

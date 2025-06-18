@@ -100,43 +100,76 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
     }
   }
 
+  const handleChartBarKeyDown = (e, day) => {
+    if ((e.key === 'Enter' || e.key === ' ') && day.count > 0) {
+      e.preventDefault()
+      onViewChange('timeline')
+    }
+  }
+
+  const handleMemoryCardKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onEditEntry(randomEntry)
+    }
+  }
+
+  const handleRecentItemKeyDown = (e, entry) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onEditEntry(entry)
+    }
+  }
+
   return (
-    <div className="dashboard">
+    <div className="dashboard" role="main" aria-label="Journal Dashboard">
       <header className="dashboard-header">
         <div className="greeting-section">
           <BookOpen className="greeting-icon" aria-hidden="true" />
           <div>
-            <h1>{getGreeting()}</h1>
+            <h1 id="dashboard-heading">{getGreeting()}</h1>
             <p>Welcome back to your digital sanctuary</p>
           </div>
         </div>
       </header>
 
-      <div className="dashboard-grid">
+      <div className="dashboard-grid" role="region" aria-labelledby="dashboard-heading">
         {/* Primary: Quick Actions - Most prominent */}
-        <section className="dashboard-card quick-actions glass-strong priority-one">
+        <section 
+          className="dashboard-card quick-actions glass-strong priority-one"
+          aria-labelledby="quick-actions-heading"
+        >
           <header className="card-header">
             <Plus className="card-icon" aria-hidden="true" />
-            <h2>Start Writing</h2>
+            <h2 id="quick-actions-heading">Start Writing</h2>
           </header>
           <div className="card-content">
             <button
               className="action-btn btn-primary cta-primary"
               onClick={onNewEntry}
               aria-label="Create a new journal entry"
+              aria-describedby="new-entry-desc"
             >
               <Edit size={24} aria-hidden="true" />
               <span>Create New Entry</span>
             </button>
+            <div id="new-entry-desc" className="sr-only">
+              Start writing a new journal entry with text or audio
+            </div>
+            
             <button
               className="action-btn btn-secondary"
               onClick={handleViewTimeline}
-              aria-label="View all journal entries in timeline"
+              aria-label="View all journal entries in chronological timeline"
+              aria-describedby="timeline-desc"
             >
               <Calendar size={20} aria-hidden="true" />
               <span>View Timeline</span>
               <ArrowRight size={16} aria-hidden="true" />
             </button>
+            <div id="timeline-desc" className="sr-only">
+              Browse all {stats.totalEntries} journal entries in chronological order
+            </div>
           </div>
         </section>
 
@@ -144,20 +177,27 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
         <section 
           className="dashboard-card activity-chart glass-strong priority-two"
           aria-labelledby="activity-chart-heading"
+          aria-describedby="activity-chart-desc"
         >
           <header className="card-header">
             <TrendingUp className="card-icon" aria-hidden="true" />
             <h2 id="activity-chart-heading">30-Day Activity</h2>
           </header>
           <div className="card-content">
+            <div id="activity-chart-desc" className="sr-only">
+              Activity chart showing your journal entry frequency over the last 30 days. 
+              Total of {stats.totalEntries} entries. Click on bars to view entries for specific days.
+            </div>
+            
             <div 
               className="chart-container"
               role="img"
-              aria-label={`Activity chart showing ${stats.totalEntries} total entries over the last 30 days`}
+              aria-labelledby="activity-chart-heading"
+              aria-describedby="activity-chart-desc"
             >
-              <div className="chart-bars">
+              <div className="chart-bars" role="list" aria-label="Daily activity bars">
                 {activityData.map((day, index) => (
-                  <div key={index} className="chart-bar-container">
+                  <div key={index} className="chart-bar-container" role="listitem">
                     <button 
                       className="chart-bar"
                       style={{ 
@@ -166,8 +206,11 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
                         opacity: day.count > 0 ? 1 : 0.3
                       }}
                       onClick={() => handleChartBarClick(day)}
-                      aria-label={`${day.label}: ${day.count} entries${day.count > 0 ? ' - Click to view entries' : ''}`}
+                      onKeyDown={(e) => handleChartBarKeyDown(e, day)}
+                      aria-label={`${day.label}: ${day.count} ${day.count === 1 ? 'entry' : 'entries'}${day.count > 0 ? '. Press Enter to view entries.' : ''}`}
                       disabled={day.count === 0}
+                      tabIndex={day.count > 0 ? 0 : -1}
+                      title={`${day.label}: ${day.count} entries`}
                     />
                     {index % 5 === 0 && (
                       <div className="chart-label" aria-hidden="true">
@@ -188,38 +231,70 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
         <section 
           className="dashboard-card statistics glass-strong priority-three"
           aria-labelledby="statistics-heading"
+          aria-describedby="statistics-desc"
         >
           <header className="card-header">
             <BarChart3 className="card-icon" aria-hidden="true" />
             <h2 id="statistics-heading">Your Journal</h2>
           </header>
           <div className="card-content">
-            <div className="stat-grid" role="list">
+            <div id="statistics-desc" className="sr-only">
+              Overview of your journal statistics including total entries, entry types, and word count
+            </div>
+            
+            <div className="stat-grid" role="list" aria-label="Journal statistics">
               <div className="stat-item" role="listitem">
-                <div className="stat-value" aria-label="Total entries">{stats.totalEntries}</div>
+                <div 
+                  className="stat-value" 
+                  aria-label={`Total entries: ${stats.totalEntries}`}
+                >
+                  {stats.totalEntries}
+                </div>
                 <div className="stat-label">Total Entries</div>
               </div>
               <div className="stat-item" role="listitem">
-                <div className="stat-value" aria-label="Text entries">{stats.textEntries}</div>
+                <div 
+                  className="stat-value" 
+                  aria-label={`Text entries: ${stats.textEntries}`}
+                >
+                  {stats.textEntries}
+                </div>
                 <div className="stat-label">Text Entries</div>
               </div>
               {stats.audioEntries > 0 && (
                 <div className="stat-item" role="listitem">
-                  <div className="stat-value" aria-label="Audio entries">{stats.audioEntries}</div>
+                  <div 
+                    className="stat-value" 
+                    aria-label={`Audio entries: ${stats.audioEntries}`}
+                  >
+                    {stats.audioEntries}
+                  </div>
                   <div className="stat-label">Audio Entries</div>
                 </div>
               )}
               <div className="stat-item" role="listitem">
-                <div className="stat-value" aria-label={`${stats.totalWords.toLocaleString()} words written`}>
+                <div 
+                  className="stat-value" 
+                  aria-label={`Total words written: ${stats.totalWords.toLocaleString()}`}
+                >
                   {stats.totalWords.toLocaleString()}
                 </div>
                 <div className="stat-label">Words Written</div>
               </div>
             </div>
+            
             {stats.lastEntry && (
-              <div className="last-entry-info">
+              <div 
+                className="last-entry-info"
+                role="status"
+                aria-label={`Last entry was created on ${format(parseISO(stats.lastEntry.createdAt), 'EEEE, MMMM do, yyyy')}`}
+              >
                 <Clock size={16} aria-hidden="true" />
-                <span>Last entry: {format(parseISO(stats.lastEntry.createdAt), 'MMM d, yyyy')}</span>
+                <span>
+                  Last entry: <time dateTime={stats.lastEntry.createdAt}>
+                    {format(parseISO(stats.lastEntry.createdAt), 'MMM d, yyyy')}
+                  </time>
+                </span>
               </div>
             )}
           </div>
@@ -230,21 +305,31 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
           <section 
             className="dashboard-card on-this-day glass-strong priority-three"
             aria-labelledby="memory-heading"
+            aria-describedby="memory-desc"
           >
             <header className="card-header">
               <Calendar className="card-icon" aria-hidden="true" />
               <h2 id="memory-heading">From Your Past</h2>
             </header>
             <div className="card-content">
+              <div id="memory-desc" className="sr-only">
+                A memory from your journal archive to revisit and reflect upon
+              </div>
+              
               <button 
                 className="memory-card"
                 onClick={() => onEditEntry(randomEntry)}
-                aria-label={`View entry from ${format(parseISO(randomEntry.createdAt), 'MMMM d, yyyy')}: ${randomEntry.title || 'Untitled entry'}`}
+                onKeyDown={handleMemoryCardKeyDown}
+                aria-label={`View entry from ${format(parseISO(randomEntry.createdAt), 'MMMM do, yyyy')}: ${randomEntry.title || 'Untitled entry'}`}
+                aria-describedby="memory-content-desc"
               >
                 <div className="memory-header">
                   <div className="memory-meta">
                     <Clock size={14} aria-hidden="true" />
-                    <time dateTime={randomEntry.createdAt}>
+                    <time 
+                      dateTime={randomEntry.createdAt}
+                      aria-label={`Created on ${format(parseISO(randomEntry.createdAt), 'EEEE, MMMM do, yyyy')}`}
+                    >
                       {format(parseISO(randomEntry.createdAt), 'MMM d, yyyy')}
                     </time>
                     {randomEntry.type === 'audio' && (
@@ -256,7 +341,9 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
                   </div>
                 </div>
                 {randomEntry.title && (
-                  <h3 className="memory-title">{randomEntry.title}</h3>
+                  <h3 className="memory-title" id="memory-content-desc">
+                    {randomEntry.title}
+                  </h3>
                 )}
                 {randomEntry.type !== 'audio' && randomEntry.content && (
                   <p className="memory-content">
@@ -279,25 +366,34 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
           <section 
             className="dashboard-card recent-entries glass-strong priority-three"
             aria-labelledby="recent-heading"
+            aria-describedby="recent-desc"
           >
             <header className="card-header">
               <BookOpen className="card-icon" aria-hidden="true" />
               <h2 id="recent-heading">Recent Entries</h2>
             </header>
             <div className="card-content">
-              <div className="recent-list" role="list">
-                {recentEntries.map((entry) => (
+              <div id="recent-desc" className="sr-only">
+                Your most recent journal entries for quick access
+              </div>
+              
+              <div className="recent-list" role="list" aria-label="Recent journal entries">
+                {recentEntries.map((entry, index) => (
                   <button 
                     key={entry.id}
                     className="recent-item"
                     onClick={() => onEditEntry(entry)}
-                    aria-label={`View entry: ${entry.title || 'Untitled'} from ${format(parseISO(entry.createdAt), 'MMMM d')}`}
+                    onKeyDown={(e) => handleRecentItemKeyDown(e, entry)}
+                    aria-label={`View entry: ${entry.title || 'Untitled'} from ${format(parseISO(entry.createdAt), 'MMMM do')}. ${index + 1} of ${recentEntries.length}.`}
                     role="listitem"
                   >
                     <div className="recent-header">
                       <div className="recent-meta">
                         <Clock size={12} aria-hidden="true" />
-                        <time dateTime={entry.createdAt}>
+                        <time 
+                          dateTime={entry.createdAt}
+                          aria-label={format(parseISO(entry.createdAt), 'EEEE, MMMM do')}
+                        >
                           {format(parseISO(entry.createdAt), 'MMM d')}
                         </time>
                         {entry.type === 'audio' && (
@@ -319,6 +415,16 @@ const Dashboard = ({ entries, onNewEntry, onEditEntry, onViewChange }) => {
             </div>
           </section>
         )}
+      </div>
+
+      {/* Live region for dynamic announcements */}
+      <div 
+        id="dashboard-announcements"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {/* Dynamic content announcements will be inserted here */}
       </div>
     </div>
   )

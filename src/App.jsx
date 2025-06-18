@@ -180,6 +180,39 @@ function App() {
     return () => window.removeEventListener('resize', handleResize)
   }, [isMobileMenuOpen])
 
+  // Focus management for modals
+  useEffect(() => {
+    const trapFocus = (e) => {
+      if (isUnifiedModalOpen || isEditorOpen || isRecorderOpen || isPlayerOpen) {
+        const modal = document.querySelector('.modal-overlay')
+        if (!modal) return
+
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault()
+              lastElement.focus()
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault()
+              firstElement.focus()
+            }
+          }
+        }
+      }
+    }
+
+    document.addEventListener('keydown', trapFocus)
+    return () => document.removeEventListener('keydown', trapFocus)
+  }, [isUnifiedModalOpen, isEditorOpen, isRecorderOpen, isPlayerOpen])
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
@@ -226,99 +259,185 @@ function App() {
   }
 
   return (
-    <div className={`app ${isMobileMenuOpen ? 'menu-open' : ''}`}>
-      {/* Mobile menu toggle button */}
-      <button
-        className="mobile-menu-toggle"
-        onClick={toggleMobileMenu}
-        aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-        aria-expanded={isMobileMenuOpen}
-        aria-controls="main-navigation"
+    <>
+      {/* Skip Links for Keyboard Navigation - WCAG AA */}
+      <a 
+        href="#main-content" 
+        className="skip-link sr-only-focusable"
+        aria-label="Skip to main content"
       >
-        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+        Skip to main content
+      </a>
+      <a 
+        href="#main-navigation" 
+        className="skip-link sr-only-focusable"
+        aria-label="Skip to navigation"
+      >
+        Skip to navigation
+      </a>
 
-      {/* Mobile menu overlay */}
-      {isMobileMenuOpen && (
+      <div 
+        className={`app ${isMobileMenuOpen ? 'menu-open' : ''}`}
+        role="application"
+        aria-label="Aura Journal Application"
+      >
+        {/* Mobile menu toggle button */}
+        <button
+          className="mobile-menu-toggle"
+          onClick={toggleMobileMenu}
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="main-navigation"
+          aria-haspopup="true"
+        >
+          {isMobileMenuOpen ? (
+            <X size={20} aria-hidden="true" />
+          ) : (
+            <Menu size={20} aria-hidden="true" />
+          )}
+          <span className="sr-only">
+            {isMobileMenuOpen ? 'Close' : 'Open'} navigation menu
+          </span>
+        </button>
+
+        {/* Mobile menu overlay */}
+        {isMobileMenuOpen && (
+          <div 
+            className="mobile-overlay"
+            onClick={closeMobileMenu}
+            aria-hidden="true"
+            role="presentation"
+          />
+        )}
+
+        <Sidebar
+          currentView={currentView}
+          onViewChange={handleViewChange}
+          onNewEntry={createNewEntry}
+          entriesCount={entries.length}
+          audioEntriesCount={entries.filter(e => e.type === 'audio').length}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={closeMobileMenu}
+          onToggleTheme={toggleTheme}
+          theme={theme}
+        />
+        
+        <main 
+          id="main-content"
+          className="main-content"
+          role="main"
+          aria-label="Main content area"
+          tabIndex={-1}
+        >
+          <div 
+            role="region" 
+            aria-live="polite" 
+            aria-atomic="true" 
+            className="sr-only"
+            id="status-announcements"
+          >
+            {/* Dynamic status announcements for screen readers */}
+          </div>
+          
+          {renderCurrentView()}
+        </main>
+
+        {/* Modal Management with Focus Trapping */}
+        {isUnifiedModalOpen && (
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unified-modal-title"
+            aria-describedby="unified-modal-description"
+            className="focus-trap"
+          >
+            <UnifiedEntryModal
+              onSave={saveEntry}
+              onCancel={() => {
+                setIsUnifiedModalOpen(false)
+                setSelectedEntry(null)
+              }}
+              speechLanguage={settings.speechLanguage}
+              audioQuality={settings.audioQuality}
+            />
+          </div>
+        )}
+
+        {isEditorOpen && (
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="entry-editor-title"
+            aria-describedby="entry-editor-description"
+            className="focus-trap"
+          >
+            <EntryEditor
+              entry={selectedEntry}
+              onSave={saveEntry}
+              onCancel={() => {
+                setIsEditorOpen(false)
+                setSelectedEntry(null)
+              }}
+              speechLanguage={settings.speechLanguage}
+            />
+          </div>
+        )}
+
+        {isRecorderOpen && (
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="audio-recorder-title"
+            aria-describedby="audio-recorder-description"
+            className="focus-trap"
+          >
+            <AudioRecorder
+              entry={selectedEntry}
+              onSave={saveEntry}
+              onCancel={() => {
+                setIsRecorderOpen(false)
+                setSelectedEntry(null)
+              }}
+              audioQuality={settings.audioQuality}
+            />
+          </div>
+        )}
+
+        {isPlayerOpen && audioToPlay && (
+          <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="audio-player-title"
+            aria-describedby="audio-player-description"
+            className="focus-trap"
+          >
+            <AudioPlayer
+              entry={audioToPlay}
+              onClose={() => {
+                setIsPlayerOpen(false)
+                setAudioToPlay(null)
+              }}
+              onEdit={() => {
+                setIsPlayerOpen(false)
+                setSelectedEntry(audioToPlay)
+                setIsRecorderOpen(true)
+              }}
+              onDelete={() => deleteEntry(audioToPlay.id)}
+            />
+          </div>
+        )}
+
+        {/* Live Region for Dynamic Content Updates */}
         <div 
-          className="mobile-overlay"
-          onClick={closeMobileMenu}
-          aria-hidden="true"
-        />
-      )}
-
-      <Sidebar
-        currentView={currentView}
-        onViewChange={handleViewChange}
-        onNewEntry={createNewEntry}
-        entriesCount={entries.length}
-        audioEntriesCount={entries.filter(e => e.type === 'audio').length}
-        isMobileOpen={isMobileMenuOpen}
-        onCloseMobile={closeMobileMenu}
-        onToggleTheme={toggleTheme}
-        theme={theme}
-      />
-      
-      <main 
-        className="main-content"
-        role="main"
-        aria-label="Main content area"
-      >
-        {renderCurrentView()}
-      </main>
-
-      {isUnifiedModalOpen && (
-        <UnifiedEntryModal
-          onSave={saveEntry}
-          onCancel={() => {
-            setIsUnifiedModalOpen(false)
-            setSelectedEntry(null)
-          }}
-          speechLanguage={settings.speechLanguage}
-          audioQuality={settings.audioQuality}
-        />
-      )}
-
-      {isEditorOpen && (
-        <EntryEditor
-          entry={selectedEntry}
-          onSave={saveEntry}
-          onCancel={() => {
-            setIsEditorOpen(false)
-            setSelectedEntry(null)
-          }}
-          speechLanguage={settings.speechLanguage}
-        />
-      )}
-
-      {isRecorderOpen && (
-        <AudioRecorder
-          entry={selectedEntry}
-          onSave={saveEntry}
-          onCancel={() => {
-            setIsRecorderOpen(false)
-            setSelectedEntry(null)
-          }}
-          audioQuality={settings.audioQuality}
-        />
-      )}
-
-      {isPlayerOpen && audioToPlay && (
-        <AudioPlayer
-          entry={audioToPlay}
-          onClose={() => {
-            setIsPlayerOpen(false)
-            setAudioToPlay(null)
-          }}
-          onEdit={() => {
-            setIsPlayerOpen(false)
-            setSelectedEntry(audioToPlay)
-            setIsRecorderOpen(true)
-          }}
-          onDelete={() => deleteEntry(audioToPlay.id)}
-        />
-      )}
-    </div>
+          id="live-region"
+          aria-live="polite"
+          aria-atomic="false"
+          className="sr-only"
+        >
+          {/* Content for screen reader announcements */}
+        </div>
+      </div>
+    </>
   )
 }
 
