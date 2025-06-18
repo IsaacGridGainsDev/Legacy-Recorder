@@ -1,4 +1,4 @@
-/* Mobile-First App Layout */
+/* Mobile-First App Layout with Desktop Sidebar */
 .app {
   display: flex;
   min-height: 100vh;
@@ -94,7 +94,7 @@
   }
 }
 
-/* Transform to Desktop Layout (768px+) */
+/* Transform to Desktop Sidebar Layout (768px+) */
 @media (min-width: 768px) {
   .app {
     flex-direction: row;
@@ -102,10 +102,10 @@
   
   .main-content {
     flex: 1;
+    margin-left: 280px; /* Sidebar width */
     padding: var(--spacing-xl);
-    padding-top: calc(var(--nav-height-tablet) + var(--spacing-xl));
-    margin-left: 0;
-    width: 100%;
+    padding-top: var(--spacing-xl);
+    width: calc(100vw - 280px);
     min-height: 100vh;
     box-sizing: border-box;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -115,32 +115,40 @@
   .mobile-menu-toggle {
     display: none;
   }
+  
+  /* Hide mobile overlay on desktop */
+  .mobile-overlay {
+    display: none;
+  }
 }
 
 /* Desktop Small Optimization (1024px+) */
 @media (min-width: 1024px) {
   .main-content {
+    margin-left: 320px; /* Wider sidebar */
     padding: var(--spacing-2xl);
-    padding-top: calc(var(--nav-height-desktop) + var(--spacing-2xl));
-    max-width: calc(100vw - var(--spacing-xl));
+    width: calc(100vw - 320px);
+    max-width: none;
   }
 }
 
 /* Desktop Large Optimization (1200px+) */
 @media (min-width: 1200px) {
   .main-content {
+    margin-left: 360px; /* Even wider sidebar */
     padding: var(--spacing-3xl);
-    padding-top: calc(var(--nav-height-desktop) + var(--spacing-3xl));
-    max-width: var(--max-width-content);
-    margin: 0 auto;
+    width: calc(100vw - 360px);
+    max-width: calc(100vw - 360px - var(--spacing-3xl) * 2);
   }
 }
 
 /* Ultra-wide Desktop (1400px+) */
 @media (min-width: 1400px) {
   .main-content {
+    margin-left: 400px; /* Maximum sidebar width */
     padding: calc(var(--spacing-3xl) * 1.5);
-    padding-top: calc(var(--nav-height-desktop) + calc(var(--spacing-3xl) * 1.5));
+    width: calc(100vw - 400px);
+    max-width: calc(100vw - 400px - calc(var(--spacing-3xl) * 3));
   }
 }
 
@@ -201,26 +209,22 @@
 /* Responsive Content Containers */
 .content-container {
   width: 100%;
-  max-width: var(--max-width-content);
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
-}
-
-@media (min-width: 768px) {
-  .content-container {
-    padding: 0 var(--spacing-lg);
-  }
-}
-
-@media (min-width: 1024px) {
-  .content-container {
-    padding: 0 var(--spacing-xl);
-  }
+  padding: 0;
 }
 
 @media (min-width: 1200px) {
   .content-container {
-    padding: 0 var(--spacing-2xl);
+    max-width: 1400px;
+    padding: 0 var(--spacing-lg);
+  }
+}
+
+@media (min-width: 1400px) {
+  .content-container {
+    max-width: 1600px;
+    padding: 0 var(--spacing-xl);
   }
 }
 
@@ -241,34 +245,37 @@
 @media (min-width: 768px) {
   .responsive-layout {
     gap: var(--spacing-xl);
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .responsive-layout {
     gap: var(--spacing-2xl);
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1200px) {
   .responsive-layout {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
-/* Flexible Sidebar Layout for Large Screens */
 @media (min-width: 1400px) {
-  .app.sidebar-layout {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: var(--spacing-2xl);
+  .responsive-layout {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Sidebar Responsive Behavior */
+@media (min-width: 768px) {
+  .sidebar-desktop-visible {
+    display: block;
   }
   
-  .app.sidebar-layout .main-content {
-    margin-left: 0;
-    padding-left: 0;
+  .sidebar-mobile-hidden {
+    display: none;
   }
 }
 
@@ -326,8 +333,8 @@ html {
   
   @media (min-width: 768px) {
     .main-content {
-      padding-left: max(var(--spacing-xl), env(safe-area-inset-left));
-      padding-right: max(var(--spacing-xl), env(safe-area-inset-right));
+      padding-left: var(--spacing-xl);
+      padding-right: var(--spacing-xl);
     }
   }
 }
@@ -449,6 +456,51 @@ html {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Desktop-specific enhancements */
+@media (min-width: 768px) {
+  .main-content-desktop {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+  }
+  
+  /* Enhanced spacing for desktop */
+  .main-content > section,
+  .main-content > article,
+  .main-content > div {
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  /* Better button sizing for desktop */
+  .main-content button {
+    min-height: 48px;
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+  
+  /* Enhanced cards for desktop */
+  .main-content .card {
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-2xl);
+  }
+}
+
+/* Ultra-wide specific optimizations */
+@media (min-width: 1400px) {
+  .main-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 1600px;
+    margin-left: 400px;
+    margin-right: auto;
+  }
+  
+  /* Center content on ultra-wide screens */
+  .main-content-centered {
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+}
+
 /* Responsive Breakpoint Indicators (Development Helper) */
 /*
 body::before {
@@ -468,18 +520,18 @@ body::before {
 }
 
 @media (min-width: 768px) {
-  body::before { content: "Tablet"; background: rgba(255, 255, 0, 0.8); color: black; }
-}
-
-@media (min-width: 1024px) {
   body::before { content: "Desktop"; background: rgba(0, 255, 0, 0.8); color: black; }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
   body::before { content: "Desktop Large"; background: rgba(0, 0, 255, 0.8); }
 }
 
+@media (min-width: 1200px) {
+  body::before { content: "Desktop XL"; background: rgba(128, 0, 128, 0.8); }
+}
+
 @media (min-width: 1400px) {
-  body::before { content: "Ultra Wide"; background: rgba(128, 0, 128, 0.8); }
+  body::before { content: "Ultra Wide"; background: rgba(0, 0, 0, 0.8); }
 }
 */
