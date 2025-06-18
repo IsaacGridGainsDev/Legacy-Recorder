@@ -146,7 +146,12 @@
   border: 1px solid var(--border-color);
 }
 
-/* Activity Chart */
+/* Activity Chart - Dominant element */
+.activity-chart {
+  grid-column: span 2;
+  min-height: 300px;
+}
+
 .chart-container {
   height: 200px;
   display: flex;
@@ -308,10 +313,14 @@
   line-height: 1.5;
 }
 
-/* Responsive design */
+/* Responsive design - Mobile breakpoints */
 @media (max-width: 1200px) {
   .dashboard-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .activity-chart {
+    grid-column: span 1;
   }
 }
 
@@ -322,7 +331,7 @@
   
   .greeting-section {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     text-align: center;
     gap: var(--spacing-md);
   }
@@ -335,9 +344,56 @@
     font-size: var(--font-size-base);
   }
   
+  /* Mobile grid layout with proper hierarchy */
   .dashboard-grid {
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
+    grid-template-areas:
+      "activity"
+      "actions"
+      "stats"
+      "memory"
+      "recent";
+  }
+  
+  /* Ensure activity chart is dominant */
+  .activity-chart {
+    grid-area: activity;
+    order: 1;
+    min-height: 280px;
+  }
+  
+  /* Floating action cards - smaller proportionally */
+  .quick-actions {
+    grid-area: actions;
+    order: 2;
+    transform: scale(0.95);
+    margin: var(--spacing-sm) auto;
+    max-width: 90%;
+  }
+  
+  .statistics {
+    grid-area: stats;
+    order: 3;
+    transform: scale(0.95);
+    margin: var(--spacing-sm) auto;
+    max-width: 90%;
+  }
+  
+  .on-this-day {
+    grid-area: memory;
+    order: 4;
+    transform: scale(0.95);
+    margin: var(--spacing-sm) auto;
+    max-width: 90%;
+  }
+  
+  .recent-entries {
+    grid-area: recent;
+    order: 5;
+    transform: scale(0.95);
+    margin: var(--spacing-sm) auto;
+    max-width: 90%;
   }
   
   .stat-grid {
@@ -346,7 +402,7 @@
   }
   
   .chart-bars {
-    height: 120px;
+    height: 140px;
   }
   
   .chart-label {
@@ -354,21 +410,90 @@
   }
   
   .dashboard-card {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+  }
+  
+  /* Center alignment for mobile cards */
+  .quick-actions,
+  .statistics,
+  .on-this-day,
+  .recent-entries {
+    justify-self: center;
+    align-self: center;
   }
 }
 
 @media (max-width: 480px) {
+  .dashboard {
+    padding: var(--spacing-sm);
+  }
+  
+  /* Even smaller floating cards for very small screens */
+  .quick-actions,
+  .statistics,
+  .on-this-day,
+  .recent-entries {
+    transform: scale(0.9);
+    max-width: 95%;
+  }
+  
+  .activity-chart {
+    min-height: 240px;
+  }
+  
   .stat-grid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
   }
   
   .action-btn {
     font-size: var(--font-size-base);
+    padding: var(--spacing-md);
   }
   
   .chart-bar {
     max-width: 8px;
+  }
+  
+  .chart-bars {
+    height: 120px;
+    gap: 1px;
+  }
+  
+  .dashboard-card {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  
+  .card-header h2 {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (max-width: 320px) {
+  .dashboard {
+    padding: var(--spacing-xs);
+  }
+  
+  /* Maximum compression for very small screens */
+  .quick-actions,
+  .statistics,
+  .on-this-day,
+  .recent-entries {
+    transform: scale(0.85);
+    max-width: 98%;
+  }
+  
+  .activity-chart {
+    min-height: 200px;
+  }
+  
+  .greeting-section h1 {
+    font-size: var(--font-size-xl);
+  }
+  
+  .chart-bars {
+    height: 100px;
   }
 }
 
@@ -391,3 +516,30 @@
 .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
 .dashboard-card:nth-child(5) { animation-delay: 0.5s; }
 .dashboard-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Ensure proper spacing and prevent overflow */
+.dashboard-grid > * {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Floating effect for action cards on mobile */
+@media (max-width: 768px) {
+  .quick-actions,
+  .statistics,
+  .on-this-day,
+  .recent-entries {
+    box-shadow: 
+      0 12px 40px var(--shadow-color),
+      inset 0 2px 0 rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .quick-actions:hover,
+  .statistics:hover,
+  .on-this-day:hover,
+  .recent-entries:hover {
+    transform: scale(0.95) translateY(-2px);
+  }
+}

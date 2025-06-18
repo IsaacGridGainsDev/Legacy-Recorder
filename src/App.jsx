@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { Menu, X } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import Dashboard from './components/Dashboard'
 import Timeline from './components/Timeline'
@@ -28,6 +29,7 @@ function App() {
   const [isRecorderOpen, setIsRecorderOpen] = useState(false)
   const [isPlayerOpen, setIsPlayerOpen] = useState(false)
   const [audioToPlay, setAudioToPlay] = useState(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   const { theme, toggleTheme } = useTheme(settings.theme)
 
@@ -77,12 +79,16 @@ function App() {
     } else {
       setIsEditorOpen(true)
     }
+    // Close mobile menu when navigating
+    setIsMobileMenuOpen(false)
   }
 
   // Create new entry (unified modal)
   const createNewEntry = () => {
     setSelectedEntry(null)
     setIsUnifiedModalOpen(true)
+    // Close mobile menu when creating entry
+    setIsMobileMenuOpen(false)
   }
 
   // Create new audio entry (legacy - for backwards compatibility)
@@ -115,11 +121,52 @@ function App() {
     setSettings(prevSettings => ({ ...prevSettings, ...newSettings }))
   }
 
+  // Handle view change
+  const handleViewChange = (view) => {
+    setCurrentView(view)
+    setIsMobileMenuOpen(false)
+  }
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  // Close mobile menu when clicking overlay
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
+
   // Apply theme and font size
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     document.documentElement.style.setProperty('--user-font-size', `${settings.fontSize}px`)
   }, [theme, settings.fontSize])
+
+  // Close mobile menu on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isMobileMenuOpen])
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isMobileMenuOpen])
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -166,13 +213,33 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app ${isMobileMenuOpen ? 'menu-open' : ''}`}>
+      {/* Mobile menu toggle button */}
+      <button
+        className="mobile-menu-toggle glass-strong"
+        onClick={toggleMobileMenu}
+        aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+      >
+        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      {/* Mobile menu overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mobile-overlay active"
+          onClick={closeMobileMenu}
+          aria-hidden="true"
+        />
+      )}
+
       <Sidebar
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={handleViewChange}
         onNewEntry={createNewEntry}
         entriesCount={entries.length}
         audioEntriesCount={entries.filter(e => e.type === 'audio').length}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={closeMobileMenu}
       />
       
       <main className="main-content">
