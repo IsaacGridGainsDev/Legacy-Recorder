@@ -85,8 +85,8 @@ def main():
     print("Setting up Legacy Recorder - Your personal journaling companion")
     print()
     
-    # Check Python version
-    if sys.version_info < (3.8, 0):
+    # Check Python version - FIXED: Changed from 3.12.0 to 3.8.0
+    if sys.version_info < (3, 8, 0):
         print("❌ Python 3.8 or higher is required")
         print(f"Current version: {sys.version}")
         input("Press Enter to exit...")
